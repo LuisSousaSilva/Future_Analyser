@@ -67,6 +67,8 @@ weights_all = pd.DataFrame()
 n = 0
 loop_end = 'No'
 
+weights_limits = [0.5, 0.5]
+
 for i in np.arange(10):
     n = n + 1
     
@@ -80,12 +82,12 @@ for i in np.arange(10):
     weights = weights.shift(2)
     
 
-    weights.iloc[1] = [0.5, 0.5]
+    weights.iloc[1] = weights_limits
     
     weights = weights.dropna()
     
     try:
-        break_point = weights[(weights['SPY'] > 0.54) | (weights['TLT'] > 0.54)].index[0]    
+        break_point = weights.query( ("weights['SPY'] > 0.54"))# | (weights['TLT'] > 0.54)].index[0]    
         weights = weights[:break_point]
         quotes_norm = quotes_norm[break_point:]
         quotes_norm = quotes_norm / quotes_norm.iloc[0]
