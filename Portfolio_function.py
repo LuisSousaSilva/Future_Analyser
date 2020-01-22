@@ -10,7 +10,6 @@ import numpy as np
 import quandl
 import plotly
 import time
-import os
 
 from pandas_datareader import data as pdr
 
@@ -99,7 +98,16 @@ for i in np.arange(10):
     if loop_end == "Yes":
         break
 
-print(weights_all)
+contributions = weights_all * Returns
+Portfolio_ret = contributions.sum(axis=1)
+Portfolio = pd.DataFrame(compute_time_series(Portfolio_ret))
+
+first_day = pd.DataFrame(np.array([[100]]), index=[pd.to_datetime(Start)])
+Portfolio = Portfolio.append(first_day)
+Portfolio = Portfolio.sort_index()
+    
+Portfolio
+
 # %%
 
 
