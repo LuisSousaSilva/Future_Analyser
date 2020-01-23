@@ -22,7 +22,7 @@ pd.set_option("display.max_rows", 20)
 pd.set_option('display.width', 800)
 pd.set_option('max_colwidth', 800)
 
-pd.options.display.float_format = '{:,.2f}'.format
+pd.options.display.float_format = '{:,.4f}'.format
 
 # Set plotly offline
 init_notebook_mode(connected=True)
@@ -46,9 +46,6 @@ yf.pdr_override() # <== that's all it takes :-)
 def merge_time_series(df_1, df_2):
     df = df_1.merge(df_2, how='left', left_index=True, right_index=True)
     return df
-    
-# %%
-
 
 # Setting pandas dataframe display options
 pd.set_option("display.max_rows", 20)
@@ -184,10 +181,12 @@ def compute_portfolio(quotes, weights):
 
 # %%
 # download quotes
-tickers = ['SPY', 'AGG']
-Quotes = pd.DataFrame()
-Start ='2005-08-01'
-End = "2020-01-15"
+# tickers = ['SPY', 'AGG']
+# Quotes = pd.DataFrame()
+# Start ='2005-08-01'
+# End = "2020-01-15"
+
+# %%
 
 for ticker in tickers:
     Quotes[ticker] = pdr.get_data_yahoo(ticker, start=Start, end=End)['Adj Close']
@@ -198,7 +197,7 @@ quotes_norm = Quotes / Quotes.iloc[0]
 weights_all = pd.DataFrame()
 n = -1
 loop_end = 'No'
-trigger = 0.99
+trigger = 0.6
 
 while loop_end == "No":
     n = n + 1
@@ -234,17 +233,17 @@ Portfolio = pd.DataFrame(compute_time_series(Portfolio_ret))
 first_day = pd.DataFrame(np.array([[100]]), index=[pd.to_datetime(Start)])
 Portfolio = Portfolio.append(first_day)
 
-Portfolio_BH = Portfolio.sort_index()
+Portfolio_trigger = Portfolio.sort_index()
 
 # %%
-Portfolio_BH.iplot(color='royalblue', title='B&H')
+Portfolio_trigger.iplot(color='royalblue', title='Portfolio_trigger')
 
 # %%
-weights_all.iplot(title='Pesos de Buy & Hold')
+weights_all.iplot(title='Pesos de Portfolio_trigger')
 
 # %%
 # download quotes
-tickers = ['SPY', 'TLT']
+tickers = ['SPY', 'AGG']
 Quotes = pd.DataFrame()
 Start ='2005-08-01'
 End = "2020-01-15"
@@ -252,70 +251,129 @@ End = "2020-01-15"
 for ticker in tickers:
     Quotes[ticker] = pdr.get_data_yahoo(ticker, start=Start, end=End)['Adj Close']
 
-# %%
-##########################
-Returns = Quotes.pct_change().dropna()
+# # %%
+# ##########################
+# Returns = Quotes.pct_change().dropna()
 
-quotes_norm = Quotes / Quotes.iloc[0]
-weights_all = pd.DataFrame()
-n = -1
-loop_end = 'No'
+# quotes_norm = Quotes / Quotes.iloc[0]
+# weights_all = pd.DataFrame()
+# n = -1
+# loop_end = 'No'
 
-rebalance_dates = pd.bdate_range(start=Start, end=End, freq='BA')
+# rebalance_dates = pd.bdate_range(start=Start, end=End, freq='BA')
 
-for i in np.arange(len(rebalance_dates) + 1):
-    n = n + 1
+# for i in np.arange(len(rebalance_dates) + 1):
+#     n = n + 1
     
-    weights = pd.DataFrame()
+#     weights = pd.DataFrame()
 
-    Portfolio_norm = quotes_norm.sum(axis=1)
+#     Portfolio_norm = quotes_norm.sum(axis=1)
 
-    for ticker in Quotes.columns:
-        weights[ticker] = quotes_norm[ticker].shift(-1) / Portfolio_norm.shift(-1)
+#     for ticker in Quotes.columns:
+#         weights[ticker] = quotes_norm[ticker].shift(-1) / Portfolio_norm.shift(-1)
 
-    weights = weights.shift(2)
+#     weights = weights.shift(2)
     
-    weights.iloc[1] = [0.5, 0.5]
+#     weights.iloc[1] = [0.33, 0.33, 0.34]
     
-    weights = weights.dropna()
+#     weights = weights.dropna()
     
-    try:
-        if rebalance_dates[n] in weights.index:
-            break_point = weights[(weights.index == rebalance_dates[n])].index[0]
-        else:
-            break_point = weights[(weights.index == rebalance_dates[n] - BDay(1))].index[0]
-            print(break_point)
-        weights = weights[:break_point]
-        quotes_norm = quotes_norm[break_point:]
-        quotes_norm = quotes_norm / quotes_norm.iloc[0]
-    except:
-        loop_end = 'Yes'
-        print('Fez ' + str(n) + ' rebalanceamentos')
+#     try:
+#         if rebalance_dates[n] in weights.index:
+#             break_point = weights[(weights.index == rebalance_dates[n])].index[0]
+#             print(break_point)
+#         else:
+#             break_point = weights[(weights.index == rebalance_dates[n] - BDay(1))].index[0]
+#             print(break_point)
+#         weights = weights[:break_point]
+#         quotes_norm = quotes_norm[break_point:]
+#         quotes_norm = quotes_norm / quotes_norm.iloc[0]
+#     except:
+#         loop_end = 'Yes'
+#         print('Fez ' + str(n) + ' rebalanceamentos')
 
-    weights_all = weights_all.append(weights)
+#     weights_all = weights_all.append(weights)
 
-contributions = weights_all * Returns
-Portfolio_ret = contributions.sum(axis=1)
-Portfolio = pd.DataFrame(compute_time_series(Portfolio_ret))
+# contributions = weights_all * Returns
+# Portfolio_ret = contributions.sum(axis=1)
+# Portfolio = pd.DataFrame(compute_time_series(Portfolio_ret))
 
-first_day = pd.DataFrame(np.array([[100]]), index=[pd.to_datetime(Start)])
-Portfolio = Portfolio.append(first_day)
+# first_day = pd.DataFrame(np.array([[100]]), index=[pd.to_datetime(Start)])
+# Portfolio = Portfolio.append(first_day)
 
-Portfolio_time_rebanced = Portfolio.sort_index()
+# Portfolio_time_rebanced = Portfolio.sort_index()
+
+# # %%
+# Portfolio_time_rebanced.iplot(color='royalblue', title='Relanceamentos temporais')
+
+# # %%
+# weights_all.iplot(title='Pesos de rebalanceamentos temporais')
+
+# # %%
+# Portfolios = merge_time_series(Portfolio_BH, Portfolio_time_rebanced)
+# Portfolios.columns = ['B&H', 'TR']
+# Portfolios.iplot()
 
 # %%
-Portfolio_time_rebanced.iplot(color='royalblue', title='Relanceamentos temporais')
+def compute_portfolio_period(Quotes, asset_weights, rebalance_periods='years'):
 
-# %%
-weights_all.iplot(title='Pesos de rebalanceamentos temporais')
+    '''
+    INPUTS:\n
+    Quotes:\n
+            DataFrame with asset quotes\n
+    asset_weights:\n
+            List of initial asset weights\n
+    rebalance_periods:\n
+            Can be "years", "quarters", "months"
+            or any given calendar month
+            (i.e. "February")\n
+    rebalance_trigger:\n
+            List of maximum relative weights allowed.
+            Will trigger rebance to initial asset
+            weights if exceeded
 
-# %%
-Portfolios = merge_time_series(Portfolio_BH, Portfolio_time_rebanced)
-Portfolios.columns = ['B&H', 'TR']
-Portfolios.iplot()
+    OUTPUTS:\n
+    Portfolio:\n 
+            Portfolio growth rate starting in 100\n
+    Portfolio_ret:\n
+            Portfolio discrete returns\n
+    Weights:\n
+            Time series of the individual assets 
+            relative weights\n
+    Contributions:\n
+            Individual assets absolute contribution
+            for portfolio return (time series)\n
+    Break_points:\n
+            Days of portfolio rebalance\n
+    Number_of_rebalances:\n
+            As the name sugests
 
-# %%
-def compute_portfolio_2(Quotes, asset_weights, rebalance_periods='years'):
+    returns Portfolio
+    '''
+    global Portfolio
+    global Portfolio_ret
+    global Weights
+    global Contributions
+    global Relative_contributions
+    global Break_points
+
+    if rebalance_periods == 'years':
+        rebalance_dates = pd.bdate_range(start=Start, end=End, freq='BA')
+
+    if rebalance_periods == 'quarters':
+        rebalance_dates = pd.bdate_range(start=Start, end=End, freq='BQ')
+    
+    if rebalance_periods == 'months':
+        rebalance_dates = pd.bdate_range(start=Start, end=End, freq='BM')
+
+    Returns = Quotes.pct_change().dropna()
+
+    quotes_norm = Quotes / Quotes.iloc[0]
+    weights_all = pd.DataFrame()
+    n = -1
+    loop_end = 'No'
+    Break_points = list()
+    # trigger = rebalance_trigger
 
     if rebalance_periods == 'years':
         rebalance_dates = pd.bdate_range(start=Start, end=End, freq='BA')
@@ -374,18 +432,10 @@ def compute_portfolio_2(Quotes, asset_weights, rebalance_periods='years'):
     return Portfolio
 
 # %%
-compute_portfolio(Quotes, [0.5, 0.5])
-
-# %%
-years = compute_portfolio_2(Quotes, [0.5, 0.5], 'years')
-quarters = compute_portfolio_2(Quotes, [0.5, 0.5], 'quarters')
-months = compute_portfolio_2(Quotes, [0.5, 0.5], 'months')
-
-# %%
-time_series = merge_time_series(years, quarters)
-time_series = merge_time_series(time_series, months)
-time_series.columns = ['years', 'quarters', 'months']
+years = compute_portfolio(Quotes, [0.5, 0.5])
+years_2 = round(compute_portfolio_2(Quotes, [0.5, 0.5], 'years'), 2)
+time_series = merge_time_series(years, years_2)
+time_series = merge_time_series(time_series, Portfolio_trigger)
 time_series.iplot()
-
 
 # %%
