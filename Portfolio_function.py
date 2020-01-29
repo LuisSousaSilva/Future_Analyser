@@ -973,13 +973,67 @@ def compute_portfolio(quotes, weights):
 
 # %%
 # download quotes
-tickers = ['SPY', 'TLT']
+tickers = ['SPY']
 Quotes = pd.DataFrame()
 Start ='2005-08-01'
 End = "2020-01-15"
 
+for ticker in tickers:
+    Quotes[ticker] = pdr.get_data_yahoo(ticker, start=Start, end=End)['Adj Close']
+
+Returns = Quotes.pct_change().dropna()
+
+# %%
+def multi_period_return(df, years = 1, days=252):
+    shifted = df.shift(days * years)
+    One_year = (((1 + (df - shifted) / shifted) ** (1 / years))-1)  * 100
+    return One_year
+
+
+multi_period_return(Quotes)
+
+# %%
+DatetimeIndex.shift(n, freq=None)
+
+# %%
+def rolling_year_return(df, years):
+    df_shifted = df.copy()
+    df_shifted.index = df_shifted.index + pd.DateOffset(years=years)
+    return (df_shifted - df)
+
+
+# %%
+rolling_year_return(Quotes, years=1)
+
+
+# %%
+Quotes_shifted - Quotes
+
+
+# %%
+v = Quotes.values / Quotes_shifted.values
+
+df3 = pd.DataFrame(v, index=Quotes.index)
+
+df3
+
+# %%
+df3[:] = Quotes.values / Quotes_shifted.values
+df3
+
 # %%
 
+
+# %%
+
+# %%
+
+# %%
+
+
+# %%
+
+# %%
 for ticker in tickers:
     Quotes[ticker] = pdr.get_data_yahoo(ticker, start=Start, end=End)['Adj Close']
 
@@ -1305,11 +1359,13 @@ time_series = merge_time_series(time_series, October)
 time_series = merge_time_series(time_series, November)
 time_series = merge_time_series(time_series, December)
 
-time_series.columns = ['Years', 'January', "February", 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+time_series.columns = ['Years', 'January', "February", 'March', 'April', 'May', 'June',
+                       'July', 'August', 'September', 'October', 'November', 'December']
 
-# time_series.iplot()
+time_series.iplot()
 
 compute_performance_table(time_series)
-
+# %%
+round(compute_portfolio_period(Quotes, [0.33, 0.33, 0.34], 'years'), 2)
 
 # %%
